@@ -13,7 +13,7 @@ CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 200
 
 # Retrieval configuration
-TOP_K_RESULTS = 5
+TOP_K_RESULTS = 8
 
 # Web search configuration
 MAX_SEARCH_RESULTS = 3
