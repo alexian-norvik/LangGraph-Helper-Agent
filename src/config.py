@@ -12,7 +12,7 @@ from src.common.constants import (
     MAX_SEARCH_RESULTS,
     TOP_K_RESULTS,
 )
-from src.common.llm_constants import EMBEDDING_MODEL, LLM_MODEL
+from src.common.llm_constants import EMBEDDING_MODEL
 
 # Load environment variables from .env file
 load_dotenv()
@@ -30,9 +30,6 @@ DOC_FILES = {
     "langchain_full": DATA_DIR / "langchain-llms-full.txt",
 }
 
-# API Keys
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
 # Agent configuration
 AGENT_MODE = os.getenv("AGENT_MODE", "offline").lower()
 ENABLE_MEMORY = os.getenv("ENABLE_MEMORY", "false").lower() == "true"
@@ -44,28 +41,16 @@ __all__ = [
     "VECTORSTORE_DIR",
     "DOC_URLS",
     "DOC_FILES",
-    "GOOGLE_API_KEY",
     "AGENT_MODE",
     "ENABLE_MEMORY",
-    "LLM_MODEL",
     "EMBEDDING_MODEL",
     "CHUNK_SIZE",
     "CHUNK_OVERLAP",
     "TOP_K_RESULTS",
     "MAX_SEARCH_RESULTS",
-    "validate_config",
     "get_mode",
     "set_mode",
 ]
-
-
-def validate_config() -> None:
-    """Validate that required configuration is present."""
-    if not GOOGLE_API_KEY:
-        raise ValueError(
-            "GOOGLE_API_KEY environment variable is required. "
-            "Get your key at: https://aistudio.google.com/app/apikey"
-        )
 
 
 def get_mode() -> str:
