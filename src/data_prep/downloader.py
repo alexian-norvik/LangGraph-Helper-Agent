@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import requests
+from loguru import logger
 
 from src.config import DATA_DIR, DOC_FILES, DOC_URLS
 
@@ -18,17 +19,17 @@ def download_file(url: str, filepath: Path) -> bool:
         True if download was successful, False otherwise
     """
     try:
-        print(f"Downloading {url}...")
+        logger.info(f"Downloading {url}...")
         response = requests.get(url, timeout=60)
         response.raise_for_status()
 
         filepath.parent.mkdir(parents=True, exist_ok=True)
         filepath.write_text(response.text, encoding="utf-8")
 
-        print(f"  Saved to {filepath} ({len(response.text):,} bytes)")
+        logger.info(f"Saved to {filepath} ({len(response.text):,} bytes)")
         return True
     except requests.RequestException as e:
-        print(f"  Failed to download {url}: {e}")
+        logger.error(f"Failed to download {url}: {e}")
         return False
 
 
@@ -48,7 +49,7 @@ def download_docs(force: bool = False) -> dict[str, bool]:
         filepath = DOC_FILES[name]
 
         if filepath.exists() and not force:
-            print(f"Skipping {name}: {filepath} already exists (use --force to re-download)")
+            logger.info(f"Skipping {name}: {filepath} already exists (use --force to re-download)")
             results[name] = True
             continue
 
