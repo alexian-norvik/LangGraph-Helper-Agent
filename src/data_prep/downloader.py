@@ -58,21 +58,6 @@ def download_docs(force: bool = False) -> dict[str, bool]:
     return results
 
 
-def get_doc_content(doc_name: str) -> str | None:
-    """Get the content of a downloaded documentation file.
-
-    Args:
-        doc_name: Name of the doc (langgraph, langgraph_full, or langchain)
-
-    Returns:
-        The document content, or None if not found
-    """
-    filepath = DOC_FILES.get(doc_name)
-    if filepath and filepath.exists():
-        return filepath.read_text(encoding="utf-8")
-    return None
-
-
 def get_all_docs() -> dict[str, str]:
     """Get content of all downloaded documentation files.
 
