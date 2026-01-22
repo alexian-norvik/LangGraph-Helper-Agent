@@ -2,6 +2,7 @@
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
+from loguru import logger
 
 from src.config import CHUNK_OVERLAP, CHUNK_SIZE
 
@@ -76,12 +77,12 @@ def chunk_documents(docs: dict[str, str]) -> list[Document]:
     all_chunks = []
 
     for source, content in docs.items():
-        print(f"Chunking {source}...")
+        logger.info(f"Chunking {source}...")
         chunks = chunk_text(content, source)
-        print(f"  Created {len(chunks)} chunks")
+        logger.info(f"Created {len(chunks)} chunks")
         all_chunks.extend(chunks)
 
-    print(f"Total chunks: {len(all_chunks)}")
+    logger.info(f"Total chunks: {len(all_chunks)}")
     return all_chunks
 
 
@@ -91,6 +92,6 @@ if __name__ == "__main__":
     docs = get_all_docs()
     if docs:
         chunks = chunk_documents(docs)
-        print(f"\nSample chunk:\n{chunks[0].page_content[:500]}...")
+        logger.info(f"Sample chunk:\n{chunks[0].page_content[:500]}...")
     else:
-        print("No docs found. Run downloader first.")
+        logger.warning("No docs found. Run downloader first.")
