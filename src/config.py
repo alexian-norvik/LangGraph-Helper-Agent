@@ -32,7 +32,6 @@ DOC_FILES = {
 
 # Agent configuration
 AGENT_MODE = os.getenv("AGENT_MODE", "offline").lower()
-ENABLE_MEMORY = os.getenv("ENABLE_MEMORY", "false").lower() == "true"
 
 # Re-export constants for backward compatibility
 __all__ = [
@@ -42,7 +41,6 @@ __all__ = [
     "DOC_URLS",
     "DOC_FILES",
     "AGENT_MODE",
-    "ENABLE_MEMORY",
     "EMBEDDING_MODEL",
     "CHUNK_SIZE",
     "CHUNK_OVERLAP",
