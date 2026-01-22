@@ -1,7 +1,7 @@
 """Text chunking for documentation files."""
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from loguru import logger
 
 from src.config import CHUNK_OVERLAP, CHUNK_SIZE
@@ -38,7 +38,11 @@ def create_splitter(
 
 
 def chunk_text(
-    text: str, source: str, chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP
+    text: str,
+    source: str,
+    chunk_size: int = CHUNK_SIZE,
+    chunk_overlap: int = CHUNK_OVERLAP,
+    min_chunk_size: int = 100,
 ) -> list[Document]:
     """Split text into chunks with metadata.
 
@@ -47,6 +51,7 @@ def chunk_text(
         source: Source identifier for metadata
         chunk_size: Maximum size of each chunk
         chunk_overlap: Number of characters to overlap between chunks
+        min_chunk_size: Minimum chunk size (filters out header-only chunks)
 
     Returns:
         List of Document objects with chunked content
@@ -56,6 +61,9 @@ def chunk_text(
     # Create a single document and split it
     doc = Document(page_content=text, metadata={"source": source})
     chunks = splitter.split_documents([doc])
+
+    # Filter out tiny chunks (usually just headers)
+    chunks = [c for c in chunks if len(c.page_content.strip()) >= min_chunk_size]
 
     # Add chunk index to metadata
     for i, chunk in enumerate(chunks):
