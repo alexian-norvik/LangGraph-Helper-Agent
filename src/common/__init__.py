@@ -9,12 +9,7 @@ from .constants import (
     TOP_K_RESULTS,
     VALID_QUERY_TYPES,
 )
-from .llm_constants import (
-    CLASSIFICATION_TEMPERATURE,
-    EMBEDDING_MODEL,
-    GENERATION_TEMPERATURE,
-    LLM_MODEL,
-)
+from .llm_constants import EMBEDDING_MODEL
 from .prompts import (
     CLASSIFICATION_PROMPT,
     SYSTEM_PROMPT,
@@ -29,11 +24,8 @@ __all__ = [
     "MAX_SEARCH_RESULTS",
     "VALID_QUERY_TYPES",
     "DEFAULT_QUERY_TYPE",
-    # LLM constants
-    "LLM_MODEL",
+    # LLM constants (LLM config is now in config.yaml)
     "EMBEDDING_MODEL",
-    "CLASSIFICATION_TEMPERATURE",
-    "GENERATION_TEMPERATURE",
     # Prompts
     "CLASSIFICATION_PROMPT",
     "SYSTEM_PROMPT",
