@@ -1,12 +1,38 @@
 """StateGraph definition for the LangGraph Helper Agent."""
 
 from langgraph.graph import END, START, StateGraph
+from loguru import logger
 
+from src.common.constants import MAX_CHAT_HISTORY, MAX_QUERY_LENGTH, SUSPICIOUS_PATTERNS
 from src.nodes.answer_generator import answer_generator
 from src.nodes.query_classifier import query_classifier
 from src.nodes.retriever import retriever
 from src.nodes.web_search import web_search
 from src.state import AgentState
+
+
+def sanitize_query(query: str) -> str:
+    """Sanitize user query for basic prompt injection protection.
+
+    Args:
+        query: The user's raw query
+
+    Returns:
+        Sanitized query
+
+    Note:
+        This provides basic protection against common prompt injection patterns.
+        It logs warnings but does not block queries to avoid false positives.
+    """
+    query_lower = query.lower()
+
+    for pattern in SUSPICIOUS_PATTERNS:
+        if pattern in query_lower:
+            logger.warning(f"Suspicious pattern detected in query: '{pattern}'")
+            # We log but don't block - users asking about prompt injection are valid
+            break
+
+    return query
 
 
 def route_by_mode(state: AgentState) -> str:
@@ -82,7 +108,29 @@ def run_agent(query: str, mode: str = "offline", chat_history: list = None) -> s
 
     Returns:
         The agent's response
+
+    Raises:
+        ValueError: If query is empty, too long, or mode is invalid
     """
+    # Input validation
+    if not query or not query.strip():
+        raise ValueError("Query cannot be empty")
+
+    query = query.strip()
+    if len(query) > MAX_QUERY_LENGTH:
+        raise ValueError(f"Query too long. Maximum {MAX_QUERY_LENGTH} characters allowed.")
+
+    # Basic prompt injection protection
+    query = sanitize_query(query)
+
+    if mode not in ("offline", "online"):
+        raise ValueError("Mode must be 'offline' or 'online'")
+
+    # Limit chat history to prevent unbounded growth
+    history = chat_history or []
+    if len(history) > MAX_CHAT_HISTORY:
+        history = history[-MAX_CHAT_HISTORY:]
+
     graph = get_graph()
 
     initial_state = {
@@ -93,7 +141,7 @@ def run_agent(query: str, mode: str = "offline", chat_history: list = None) -> s
         "web_results": None,
         "context": None,
         "response": None,
-        "chat_history": chat_history or [],
+        "chat_history": history,
     }
 
     result = graph.invoke(initial_state)
