@@ -1,6 +1,7 @@
 """Configuration management for the LangGraph Helper Agent."""
 
 import os
+import threading
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -30,8 +31,9 @@ DOC_FILES = {
     "langchain_full": DATA_DIR / "langchain-llms-full.txt",
 }
 
-# Agent configuration
-AGENT_MODE = os.getenv("AGENT_MODE", "offline").lower()
+# Agent configuration (thread-safe)
+_mode_lock = threading.Lock()
+_agent_mode = os.getenv("AGENT_MODE", "offline").lower()
 
 # Re-export constants for backward compatibility
 __all__ = [
@@ -40,7 +42,6 @@ __all__ = [
     "VECTORSTORE_DIR",
     "DOC_URLS",
     "DOC_FILES",
-    "AGENT_MODE",
     "EMBEDDING_MODEL",
     "CHUNK_SIZE",
     "CHUNK_OVERLAP",
@@ -52,13 +53,15 @@ __all__ = [
 
 
 def get_mode() -> str:
-    """Get the current agent mode."""
-    return AGENT_MODE
+    """Get the current agent mode (thread-safe)."""
+    with _mode_lock:
+        return _agent_mode
 
 
 def set_mode(mode: str) -> None:
-    """Set the agent mode dynamically."""
-    global AGENT_MODE
+    """Set the agent mode dynamically (thread-safe)."""
+    global _agent_mode
     if mode.lower() not in ("offline", "online"):
         raise ValueError("Mode must be 'offline' or 'online'")
-    AGENT_MODE = mode.lower()
+    with _mode_lock:
+        _agent_mode = mode.lower()
