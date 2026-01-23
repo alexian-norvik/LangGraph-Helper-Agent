@@ -17,6 +17,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+from src.common.constants import HEADER_WIDTH  # noqa: E402
 from src.config import VECTORSTORE_DIR  # noqa: E402
 from src.data_prep.chunker import chunk_documents  # noqa: E402
 from src.data_prep.downloader import download_docs, get_all_docs  # noqa: E402
@@ -37,9 +38,9 @@ def main():
     )
     args = parser.parse_args()
 
-    print("=" * 60)
+    print("=" * HEADER_WIDTH)
     print("LangGraph Helper Agent - Data Preparation")
-    print("=" * 60)
+    print("=" * HEADER_WIDTH)
 
     # Step 1: Download documentation
     print("\n[1/3] Downloading documentation files...")
@@ -85,9 +86,9 @@ def main():
 
     create_vectorstore(chunks, VECTORSTORE_DIR)
 
-    print("\n" + "=" * 60)
+    print("\n" + "=" * HEADER_WIDTH)
     print("Data preparation complete!")
-    print("=" * 60)
+    print("=" * HEADER_WIDTH)
     print("\nYou can now run the agent:")
     print("  python main.py                    # Interactive mode")
     print("  python main.py 'Your question'    # Quick query")
