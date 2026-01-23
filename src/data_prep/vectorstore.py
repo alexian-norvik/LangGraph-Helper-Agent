@@ -84,8 +84,22 @@ def load_vectorstore(load_path: Path | None = None) -> FAISS | None:
 
     Returns:
         FAISS vector store, or None if not found
+
+    Raises:
+        ValueError: If load_path is outside the project's VECTORSTORE_DIR
     """
-    load_path = Path(load_path) if load_path else VECTORSTORE_DIR
+    load_path = Path(load_path).resolve() if load_path else VECTORSTORE_DIR.resolve()
+    vectorstore_base = VECTORSTORE_DIR.resolve()
+
+    # Security: Only allow loading from within the project's vectorstore directory
+    # This mitigates risks from FAISS's pickle-based deserialization
+    try:
+        load_path.relative_to(vectorstore_base)
+    except ValueError as e:
+        raise ValueError(
+            f"Security: Cannot load vectorstore from outside project directory. "
+            f"Path {load_path} is not within {vectorstore_base}"
+        ) from e
 
     index_file = load_path / "index.faiss"
     if not index_file.exists():
@@ -94,6 +108,8 @@ def load_vectorstore(load_path: Path | None = None) -> FAISS | None:
 
     logger.info(f"Loading vector store from {load_path}...")
     embeddings = get_embeddings()
+    # Note: allow_dangerous_deserialization is required by LangChain's FAISS implementation
+    # as it uses pickle internally. We mitigate this by validating the path above.
     vectorstore = FAISS.load_local(str(load_path), embeddings, allow_dangerous_deserialization=True)
     logger.info("Vector store loaded successfully")
     return vectorstore
@@ -125,7 +141,7 @@ if __name__ == "__main__":
         results = vs.similarity_search("How do I create a StateGraph?", k=3)
         logger.info("Test search results:")
         for i, doc in enumerate(results):
-            logger.info(f"{i+1}. [{doc.metadata['source']}]")
+            logger.info(f"{i + 1}. [{doc.metadata['source']}]")
             logger.info(f"   {doc.page_content[:200]}...")
     else:
         logger.warning("No docs found. Run downloader first.")
