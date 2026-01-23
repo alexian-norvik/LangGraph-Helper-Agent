@@ -49,5 +49,5 @@ def validate_config(config_dict: dict[str, Any], schema_class: type[BaseModel]) 
     """
     try:
         return schema_class(**config_dict)
-    except ValidationError as e:
-        raise e
+    except ValidationError:
+        raise
