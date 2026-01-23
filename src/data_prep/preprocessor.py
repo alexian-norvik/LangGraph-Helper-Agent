@@ -206,7 +206,9 @@ def preprocess_document(text: str, source: str) -> str:
 
     # Step 1: Normalize code blocks (keep both Python and TypeScript)
     text = normalize_code_blocks(text)
-    logger.debug(f"After code normalization: {len(text)} chars ({len(text)/original_len*100:.1f}%)")
+    logger.debug(
+        f"After code normalization: {len(text)} chars ({len(text) / original_len * 100:.1f}%)"
+    )
 
     # Step 2: Remove navigation and boilerplate
     text = remove_navigation_boilerplate(text)
@@ -259,10 +261,10 @@ if __name__ == "__main__":
 
         # Show sample
         for source, content in preprocessed.items():
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"Source: {source}")
             print(f"Length: {len(content):,} chars")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
             print(content[:1000])
             print("...")
     else:
