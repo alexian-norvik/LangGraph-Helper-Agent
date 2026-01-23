@@ -1,8 +1,11 @@
 """Query classification node."""
 
+from loguru import logger
+
 from src.common.constants import DEFAULT_QUERY_TYPE, VALID_QUERY_TYPES
 from src.common.prompts import CLASSIFICATION_PROMPT
 from src.llm_client import UnifiedLLMClient
+from src.llm_client.utils import LLMClientError
 from src.state import AgentState
 
 
@@ -17,14 +20,19 @@ def query_classifier(state: AgentState) -> dict:
     """
     query = state["query"]
 
-    client = UnifiedLLMClient()
+    try:
+        client = UnifiedLLMClient()
 
-    response = client.invoke(CLASSIFICATION_PROMPT.format(query=query))
-    query_type = response.strip().lower()
+        response = client.invoke(CLASSIFICATION_PROMPT.format(query=query))
+        query_type = response.strip().lower()
 
-    # Validate the classification
-    if query_type not in VALID_QUERY_TYPES:
-        # Default to langgraph if classification is unclear
+        # Validate the classification
+        if query_type not in VALID_QUERY_TYPES:
+            # Default to langgraph if classification is unclear
+            query_type = DEFAULT_QUERY_TYPE
+
+    except LLMClientError as e:
+        logger.warning(f"Classification failed, using default: {e}")
         query_type = DEFAULT_QUERY_TYPE
 
     return {"query_type": query_type}
