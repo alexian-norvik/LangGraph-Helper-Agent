@@ -7,7 +7,9 @@ from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
 from loguru import logger
 
-from src.config import EMBEDDING_MODEL, VECTORSTORE_DIR
+from src.common.constants import VECTORSTORE_BATCH_SIZE
+from src.common.llm_constants import EMBEDDING_MODEL
+from src.config import VECTORSTORE_DIR
 
 
 def get_embeddings() -> OllamaEmbeddings:
@@ -22,7 +24,7 @@ def get_embeddings() -> OllamaEmbeddings:
 def create_vectorstore(
     documents: list[Document],
     save_path: Path | None = None,
-    batch_size: int = 100,
+    batch_size: int = VECTORSTORE_BATCH_SIZE,
 ) -> FAISS:
     """Create a FAISS vector store from documents with progress logging.
 
