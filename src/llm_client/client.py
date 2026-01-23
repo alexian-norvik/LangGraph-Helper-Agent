@@ -2,7 +2,10 @@
 
 from collections.abc import Iterator
 
+import httpx
+import requests
 from langchain.chat_models import init_chat_model
+from loguru import logger
 
 from src.common.llm_constants import OPENROUTER_BASE_URL
 from src.general_utils.config_loader import load_yaml_config, validate_config
@@ -10,10 +13,7 @@ from src.llm_client.schemas import LLMConfig, OllamaSettings, OpenRouterSettings
 from src.llm_client.utils import (
     ProviderError,
     load_env_var,
-    setup_logging,
 )
-
-logger = setup_logging()
 
 
 class UnifiedLLMClient:
@@ -81,12 +81,21 @@ class UnifiedLLMClient:
 
         Returns:
             The model's response as a string
+
+        Raises:
+            ProviderError: If the LLM request fails
         """
         try:
             response = self.llm.invoke(prompt)
             return response.content
-        except Exception as e:
-            logger.error(f"Error invoking LLM: {e}")
+        except (requests.RequestException, httpx.HTTPError) as e:
+            logger.error(f"HTTP error invoking LLM: {e}")
+            raise ProviderError(f"Failed to invoke LLM: {e}") from e
+        except (TimeoutError, ConnectionError) as e:
+            logger.error(f"Connection error invoking LLM: {e}")
+            raise ProviderError(f"Failed to invoke LLM: {e}") from e
+        except ValueError as e:
+            logger.error(f"Invalid input to LLM: {e}")
             raise ProviderError(f"Failed to invoke LLM: {e}") from e
 
     def stream(self, prompt: str) -> Iterator[str]:
@@ -97,6 +106,9 @@ class UnifiedLLMClient:
 
         Yields:
             Response chunks as strings
+
+        Raises:
+            ProviderError: If the LLM streaming fails
         """
         try:
             for chunk in self.llm.stream(prompt):
@@ -104,6 +116,12 @@ class UnifiedLLMClient:
                     yield chunk.content
                 else:
                     yield str(chunk)
-        except Exception as e:
-            logger.error(f"Error streaming from LLM: {e}")
+        except (requests.RequestException, httpx.HTTPError) as e:
+            logger.error(f"HTTP error streaming from LLM: {e}")
+            raise ProviderError(f"Failed to stream from LLM: {e}") from e
+        except (TimeoutError, ConnectionError) as e:
+            logger.error(f"Connection error streaming from LLM: {e}")
+            raise ProviderError(f"Failed to stream from LLM: {e}") from e
+        except ValueError as e:
+            logger.error(f"Invalid input to LLM: {e}")
             raise ProviderError(f"Failed to stream from LLM: {e}") from e
