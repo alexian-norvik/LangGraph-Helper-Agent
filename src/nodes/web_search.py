@@ -1,7 +1,9 @@
 """Web search node for online mode."""
 
 from ddgs import DDGS
+from ddgs.exceptions import DDGSException, RatelimitException, TimeoutException
 from loguru import logger
+from requests.exceptions import RequestException
 
 from src.config import MAX_SEARCH_RESULTS
 from src.state import AgentState
@@ -57,6 +59,18 @@ def web_search(state: AgentState) -> dict:
         logger.debug(f"Formatted {len(web_results)} web results")
         return {"web_results": web_results}
 
-    except Exception as e:
-        logger.error(f"Web search failed: {e}")
+    except RatelimitException as e:
+        logger.warning(f"DuckDuckGo rate limit exceeded: {e}")
+        return {"web_results": []}
+    except TimeoutException as e:
+        logger.warning(f"DuckDuckGo search timeout: {e}")
+        return {"web_results": []}
+    except DDGSException as e:
+        logger.warning(f"DuckDuckGo search error: {e}")
+        return {"web_results": []}
+    except RequestException as e:
+        logger.warning(f"Network error during web search: {e}")
+        return {"web_results": []}
+    except (TimeoutError, ConnectionError) as e:
+        logger.warning(f"Connection error during web search: {e}")
         return {"web_results": []}
