@@ -7,6 +7,8 @@ import warnings
 
 from loguru import logger
 
+from src.common.constants import HEADER_WIDTH, LOG_LEVEL_MAP
+
 # Suppress noisy warnings from dependencies (FAISS SWIG, Ollama sockets)
 warnings.filterwarnings("ignore", category=ResourceWarning)
 warnings.filterwarnings("ignore", message=".*SwigPy.*")
@@ -63,9 +65,9 @@ def setup_session() -> dict:
     Returns:
         Dictionary with session configuration
     """
-    print("\n" + "=" * 60)
+    print("\n" + "=" * HEADER_WIDTH)
     print("  LangGraph Helper Agent - Setup")
-    print("=" * 60)
+    print("=" * HEADER_WIDTH)
 
     # Mode selection
     mode = get_user_choice("\n1. Select mode", ["offline", "online"], default="offline")
@@ -79,13 +81,11 @@ def setup_session() -> dict:
         "3. Log level", ["quiet", "normal", "verbose", "debug"], default="quiet"
     )
 
-    level_map = {"quiet": "ERROR", "normal": "WARNING", "verbose": "INFO", "debug": "DEBUG"}
-
-    print("\n" + "-" * 60)
+    print("\n" + "-" * HEADER_WIDTH)
     print(f"  Mode: {mode} | Memory: {'on' if enable_memory else 'off'} | Logs: {log_level}")
-    print("-" * 60)
+    print("-" * HEADER_WIDTH)
 
-    return {"mode": mode, "enable_memory": enable_memory, "log_level": level_map[log_level]}
+    return {"mode": mode, "enable_memory": enable_memory, "log_level": LOG_LEVEL_MAP[log_level]}
 
 
 def run_interactive(mode: str, enable_memory: bool):
