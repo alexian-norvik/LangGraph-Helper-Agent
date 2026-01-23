@@ -2,6 +2,7 @@
 
 from loguru import logger
 
+from src.common.constants import CHAT_HISTORY_CONTEXT_LENGTH
 from src.common.prompts import SYSTEM_PROMPT
 from src.llm_client import UnifiedLLMClient
 from src.llm_client.utils import LLMClientError, ProviderError
@@ -21,7 +22,7 @@ def format_chat_history(history: list) -> str:
         return "No previous conversation."
 
     formatted = []
-    for msg in history[-6:]:  # Keep last 6 messages for context
+    for msg in history[-CHAT_HISTORY_CONTEXT_LENGTH:]:
         role = msg.get("role", "user").capitalize()
         content = msg.get("content", "")
         formatted.append(f"{role}: {content}")
