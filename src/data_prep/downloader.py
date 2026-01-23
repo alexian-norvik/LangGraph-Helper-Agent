@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 from loguru import logger
 
+from src.common.constants import DOWNLOAD_TIMEOUT
 from src.config import DATA_DIR, DOC_FILES, DOC_URLS
 
 
@@ -20,7 +21,7 @@ def download_file(url: str, filepath: Path) -> bool:
     """
     try:
         logger.info(f"Downloading {url}...")
-        response = requests.get(url, timeout=60)
+        response = requests.get(url, timeout=DOWNLOAD_TIMEOUT)
         response.raise_for_status()
 
         filepath.parent.mkdir(parents=True, exist_ok=True)
