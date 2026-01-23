@@ -7,6 +7,16 @@ import re
 
 from loguru import logger
 
+from src.common.constants import (
+    DEDUP_SIGNATURE_LENGTH,
+    EMPTY_CODE_BLOCK_PATTERN,
+    MAX_CONSECUTIVE_BLANK_LINES,
+    MIN_SECTION_LENGTH,
+    NAVIGATION_REMOVAL_PATTERNS,
+    PYTHON_CODE_INDICATORS,
+    WHITESPACE_CODE_BLOCK_PATTERN,
+)
+
 
 def normalize_code_blocks(text: str) -> str:
     """Normalize code block markers for consistency.
@@ -21,10 +31,10 @@ def normalize_code_blocks(text: str) -> str:
         Text with normalized code blocks
     """
     # Remove empty code blocks
-    text = re.sub(r"```\w*\s*```", "", text)
+    text = re.sub(EMPTY_CODE_BLOCK_PATTERN, "", text)
 
     # Remove code blocks that are just whitespace
-    text = re.sub(r"```\w*\n\s*```", "", text)
+    text = re.sub(WHITESPACE_CODE_BLOCK_PATTERN, "", text)
 
     return text
 
@@ -38,28 +48,7 @@ def remove_navigation_boilerplate(text: str) -> str:
     Returns:
         Cleaned text
     """
-    patterns = [
-        # Navigation breadcrumbs
-        r"^\s*[\w\s]+>\s*[\w\s]+>\s*[\w\s]+\s*$",
-        # Table of contents links
-        r"^\s*-\s*\[.*?\]\(#.*?\)\s*$",
-        # "On this page" sections
-        r"On this page\s*\n(?:\s*-\s*\[.*?\].*?\n)+",
-        # "Skip to content" links
-        r"Skip to (?:main )?content",
-        # Footer navigation
-        r"(?:Previous|Next):\s*\[.*?\]\(.*?\)",
-        # Edit on GitHub links
-        r"\[Edit (?:this page )?on GitHub\].*",
-        # Was this helpful sections
-        r"Was this (?:page |)helpful\?.*",
-        # Empty markdown links
-        r"\[\]\(.*?\)",
-        # Repeated separator lines
-        r"(?:---\s*){2,}",
-    ]
-
-    for pattern in patterns:
+    for pattern in NAVIGATION_REMOVAL_PATTERNS:
         text = re.sub(pattern, "", text, flags=re.MULTILINE | re.IGNORECASE)
 
     return text
@@ -74,8 +63,8 @@ def clean_markdown(text: str) -> str:
     Returns:
         Cleaned text
     """
-    # Remove excessive blank lines (more than 2)
-    text = re.sub(r"\n{4,}", "\n\n\n", text)
+    # Remove excessive blank lines (more than allowed)
+    text = re.sub(rf"\n{{{MAX_CONSECUTIVE_BLANK_LINES},}}", "\n\n\n", text)
 
     # Remove trailing whitespace on lines
     text = re.sub(r"[ \t]+$", "", text, flags=re.MULTILINE)
@@ -108,25 +97,7 @@ def extract_python_sections(text: str) -> str:
     def convert_generic_to_python(match):
         code = match.group(1)
         # Check if it looks like Python
-        python_indicators = [
-            "import ",
-            "from ",
-            "def ",
-            "class ",
-            "async def",
-            "if __name__",
-            '"""',
-            "'''",
-            "print(",
-            "return ",
-            "@tool",
-            "@",
-            "self.",
-            "None",
-            "True",
-            "False",
-        ]
-        if any(indicator in code for indicator in python_indicators):
+        if any(indicator in code for indicator in PYTHON_CODE_INDICATORS):
             return f"```python\n{code}```"
         return match.group(0)
 
@@ -151,12 +122,12 @@ def remove_duplicate_sections(text: str) -> str:
     unique_sections = []
 
     for section in sections:
-        # Use first 200 chars as signature (skip very short sections)
-        if len(section.strip()) < 50:
+        # Skip very short sections
+        if len(section.strip()) < MIN_SECTION_LENGTH:
             unique_sections.append(section)
             continue
 
-        signature = section.strip()[:200].lower()
+        signature = section.strip()[:DEDUP_SIGNATURE_LENGTH].lower()
         if signature not in seen_content:
             seen_content.add(signature)
             unique_sections.append(section)
@@ -164,12 +135,11 @@ def remove_duplicate_sections(text: str) -> str:
     return "".join(unique_sections)
 
 
-def filter_relevant_content(text: str, source: str) -> str:
-    """Filter content based on source type.
+def filter_relevant_content(text: str) -> str:
+    """Filter out irrelevant content sections.
 
     Args:
         text: Documentation text
-        source: Source identifier (langgraph, langchain, etc.)
 
     Returns:
         Filtered text
@@ -220,7 +190,7 @@ def preprocess_document(text: str, source: str) -> str:
     text = extract_python_sections(text)
 
     # Step 5: Filter irrelevant content
-    text = filter_relevant_content(text, source)
+    text = filter_relevant_content(text)
 
     # Step 6: Remove duplicates
     text = remove_duplicate_sections(text)
