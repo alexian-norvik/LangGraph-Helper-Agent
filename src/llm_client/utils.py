@@ -1,6 +1,5 @@
 """Utility functions for LLM client."""
 
-import logging
 import os
 
 from dotenv import load_dotenv
@@ -28,27 +27,6 @@ class APIKeyError(LLMClientError):
     """Missing or invalid API key."""
 
     pass
-
-
-def setup_logging(level: str = "INFO") -> logging.Logger:
-    """Configure logging for the LLM client.
-
-    Args:
-        level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-
-    Returns:
-        Configured logger instance
-    """
-    logger = logging.getLogger("llm_client")
-    logger.setLevel(getattr(logging, level.upper()))
-
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
-    return logger
 
 
 def load_env_var(key: str, required: bool = True) -> str | None:
