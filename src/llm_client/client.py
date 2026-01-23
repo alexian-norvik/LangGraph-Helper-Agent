@@ -4,6 +4,7 @@ from collections.abc import Iterator
 
 from langchain.chat_models import init_chat_model
 
+from src.common.llm_constants import OPENROUTER_BASE_URL
 from src.general_utils.config_loader import load_yaml_config, validate_config
 from src.llm_client.schemas import LLMConfig, OllamaSettings, OpenRouterSettings
 from src.llm_client.utils import (
@@ -51,7 +52,7 @@ class UnifiedLLMClient:
             model=self.config.model.name,
             model_provider="openai",
             api_key=api_key,
-            base_url="https://openrouter.ai/api/v1",
+            base_url=OPENROUTER_BASE_URL,
             temperature=self.config.parameters.temperature,
             max_tokens=self.config.parameters.max_tokens,
             timeout=settings.timeout,
