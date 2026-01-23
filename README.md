@@ -111,7 +111,7 @@ The agent uses a TypedDict-based state (`AgentState`) that flows through all nod
 
    # Pull the LLM and embedding models
    ollama pull llama3.2           # For LLM
-   ollama pull nomic-embed-text   # For embeddings
+   ollama pull snowflake-arctic-embed2   # For embeddings
    ```
 
 4. Download documentation and create the vector store:
@@ -172,7 +172,7 @@ Switched from offline to online mode
 **Data preparation:**
 - Documentation is downloaded via `scripts/prepare_data.py`
 - Text is chunked using RecursiveCharacterTextSplitter (2000 chars, 200 overlap)
-- Chunks are embedded using Ollama (nomic-embed-text) - no rate limits
+- Chunks are embedded using Ollama (snowflake-arctic-embed2) - no rate limits
 - FAISS index is created and stored locally
 
 **Updating data:**
@@ -299,7 +299,7 @@ LangGraph-Helper-Agent/
 | Component | Choice | Why |
 |-----------|--------|-----|
 | **LLM** | [Ollama](https://ollama.ai) / [OpenRouter](https://openrouter.ai) | Local or cloud, configurable |
-| **Embeddings** | [Ollama](https://ollama.ai) (nomic-embed-text) | Local, no rate limits, 8K context |
+| **Embeddings** | [Ollama](https://ollama.ai) (snowflake-arctic-embed2) | Local, no rate limits, 8K context |
 | **Vector Store** | FAISS | Lightweight, no server needed, fast |
 | **Web Search** | DuckDuckGo | Free, no API key required |
 | **Framework** | LangGraph + LangChain | The tools we're helping developers with |
