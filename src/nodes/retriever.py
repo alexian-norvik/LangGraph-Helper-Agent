@@ -2,6 +2,7 @@
 
 import threading
 
+from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from loguru import logger
 
@@ -22,8 +23,12 @@ SOURCE_PRIORITY = {
 }
 
 
-def get_vectorstore():
-    """Get the vector store, loading it if necessary (thread-safe)."""
+def get_vectorstore() -> FAISS | None:
+    """Get the vector store, loading it if necessary (thread-safe).
+
+    Returns:
+        FAISS vector store instance, or None if not found
+    """
     global _vectorstore_cache
     if _vectorstore_cache is None:
         with _vectorstore_lock:
