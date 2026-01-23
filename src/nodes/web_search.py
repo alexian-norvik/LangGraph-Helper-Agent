@@ -5,7 +5,7 @@ from ddgs.exceptions import DDGSException, RatelimitException, TimeoutException
 from loguru import logger
 from requests.exceptions import RequestException
 
-from src.config import MAX_SEARCH_RESULTS
+from src.common.constants import DDGS_REGION, MAX_SEARCH_RESULTS
 from src.state import AgentState
 
 
@@ -37,7 +37,7 @@ def web_search(state: AgentState) -> dict:
                 ddgs.text(
                     search_query,
                     max_results=MAX_SEARCH_RESULTS,
-                    region="wt-wt",  # No region bias
+                    region=DDGS_REGION,
                 )
             )
 
