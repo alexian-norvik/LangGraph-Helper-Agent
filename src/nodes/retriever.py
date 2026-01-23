@@ -5,7 +5,7 @@ import threading
 from langchain_core.documents import Document
 from loguru import logger
 
-from src.common.constants import MAX_TOTAL_DOCS, TOP_K_RESULTS
+from src.common.constants import DEDUP_KEY_LENGTH, MAX_TOTAL_DOCS, TOP_K_RESULTS
 from src.data_prep.vectorstore import load_vectorstore
 from src.state import AgentState
 
@@ -95,8 +95,8 @@ def multi_query_search(
     for query in queries:
         docs = vectorstore.similarity_search(query, k=k_per_query)
         for doc in docs:
-            # Use first 200 chars as dedup key
-            content_key = doc.page_content[:200]
+            # Use first N chars as dedup key
+            content_key = doc.page_content[:DEDUP_KEY_LENGTH]
             if content_key not in seen_content:
                 seen_content.add(content_key)
                 all_docs.append(doc)
