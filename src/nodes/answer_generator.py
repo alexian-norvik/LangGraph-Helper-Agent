@@ -4,6 +4,7 @@ from loguru import logger
 
 from src.common.prompts import SYSTEM_PROMPT
 from src.llm_client import UnifiedLLMClient
+from src.llm_client.utils import LLMClientError, ProviderError
 from src.state import AgentState
 
 
@@ -44,14 +45,22 @@ def answer_generator(state: AgentState) -> dict:
     logger.debug(f"Context length: {len(context)} chars")
     logger.debug(f"Context preview: {context[:500]}...")
 
-    client = UnifiedLLMClient()
+    try:
+        client = UnifiedLLMClient()
 
-    system_message = SYSTEM_PROMPT.format(
-        context=context, chat_history=format_chat_history(chat_history)
-    )
+        system_message = SYSTEM_PROMPT.format(
+            context=context, chat_history=format_chat_history(chat_history)
+        )
 
-    prompt = f"{system_message}\n\nUser Question: {query}"
+        prompt = f"{system_message}\n\nUser Question: {query}"
 
-    response = client.invoke(prompt)
+        response = client.invoke(prompt)
 
-    return {"response": response}
+        return {"response": response}
+
+    except ProviderError as e:
+        logger.error(f"LLM provider error: {e}")
+        return {"response": f"Error: LLM provider unavailable. {e}"}
+    except LLMClientError as e:
+        logger.error(f"LLM client error: {e}")
+        return {"response": f"Error: Unable to generate response. {e}"}
