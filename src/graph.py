@@ -1,6 +1,7 @@
 """StateGraph definition for the LangGraph Helper Agent."""
 
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 from loguru import logger
 
 from src.common.constants import MAX_CHAT_HISTORY, MAX_QUERY_LENGTH, SUSPICIOUS_PATTERNS
@@ -49,7 +50,7 @@ def route_by_mode(state: AgentState) -> str:
     return "retriever"
 
 
-def build_graph() -> StateGraph:
+def build_graph() -> CompiledStateGraph:
     """Build and compile the agent graph.
 
     Returns:
@@ -90,15 +91,19 @@ def build_graph() -> StateGraph:
 _graph = None
 
 
-def get_graph():
-    """Get the compiled graph, building it if necessary."""
+def get_graph() -> CompiledStateGraph:
+    """Get the compiled graph, building it if necessary.
+
+    Returns:
+        Compiled StateGraph instance
+    """
     global _graph
     if _graph is None:
         _graph = build_graph()
     return _graph
 
 
-def run_agent(query: str, mode: str = "offline", chat_history: list = None) -> str:
+def run_agent(query: str, mode: str = "offline", chat_history: list[dict] | None = None) -> str:
     """Run the agent with a query.
 
     Args:
