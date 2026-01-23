@@ -4,7 +4,12 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from loguru import logger
 
-from src.config import CHUNK_OVERLAP, CHUNK_SIZE
+from src.common.constants import (
+    CHUNK_OVERLAP,
+    CHUNK_SIZE,
+    MARKDOWN_SEPARATORS,
+    MIN_CHUNK_SIZE,
+)
 
 
 def create_splitter(
@@ -23,16 +28,7 @@ def create_splitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         length_function=len,
-        separators=[
-            "\n## ",  # H2 headers
-            "\n### ",  # H3 headers
-            "\n#### ",  # H4 headers
-            "\n\n",  # Paragraphs
-            "\n",  # Lines
-            ". ",  # Sentences
-            " ",  # Words
-            "",  # Characters
-        ],
+        separators=MARKDOWN_SEPARATORS,
         keep_separator=True,
     )
 
@@ -42,7 +38,7 @@ def chunk_text(
     source: str,
     chunk_size: int = CHUNK_SIZE,
     chunk_overlap: int = CHUNK_OVERLAP,
-    min_chunk_size: int = 100,
+    min_chunk_size: int = MIN_CHUNK_SIZE,
 ) -> list[Document]:
     """Split text into chunks with metadata.
 
