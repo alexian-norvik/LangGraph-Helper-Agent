@@ -6,14 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from src.common.constants import (
-    CHUNK_OVERLAP,
-    CHUNK_SIZE,
-    DOC_URLS,
-    MAX_SEARCH_RESULTS,
-    TOP_K_RESULTS,
-)
-from src.common.llm_constants import EMBEDDING_MODEL
+from src.common.constants import DOC_URLS
 
 # Load environment variables from .env file
 load_dotenv()
@@ -35,18 +28,12 @@ DOC_FILES = {
 _mode_lock = threading.Lock()
 _agent_mode = os.getenv("AGENT_MODE", "offline").lower()
 
-# Re-export constants for backward compatibility
 __all__ = [
     "PROJECT_ROOT",
     "DATA_DIR",
     "VECTORSTORE_DIR",
     "DOC_URLS",
     "DOC_FILES",
-    "EMBEDDING_MODEL",
-    "CHUNK_SIZE",
-    "CHUNK_OVERLAP",
-    "TOP_K_RESULTS",
-    "MAX_SEARCH_RESULTS",
     "get_mode",
     "set_mode",
 ]
