@@ -1,27 +1,27 @@
 # Core LangGraph/LangChain (V1)
-langgraph>=1.0.0
-langchain>=1.0.0
-langchain-core>=1.0.0
-langchain-community>=0.3.0
-langchain-text-splitters>=0.3.0
+langgraph==1.0.6
+langchain==1.2.6
+langchain-core==1.2.7
+langchain-community==0.4.1
+langchain-text-splitters==1.1.0
 
 # Ollama integration (local LLM/embeddings - no rate limits)
-langchain-ollama>=0.2.0
+langchain-ollama==1.0.1
 
 # LLM client dependencies
-pydantic>=2.0.0
-pyyaml>=6.0.0
+pydantic==2.12.5
+pyyaml==6.0.3
 
 # Vector store
-faiss-cpu>=1.7.4
+faiss-cpu==1.13.2
 
 # Web search (online mode) - no API key required
-ddgs>=6.0.0
+ddgs==9.10.0
 
 # Utilities
-python-dotenv>=1.0.0
-requests>=2.31.0
-loguru>=0.7.0
+python-dotenv==1.2.1
+requests==2.32.5
+loguru==0.7.3
 
 # Development
 pre-commit>=3.6.0
