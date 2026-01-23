@@ -72,7 +72,7 @@ def create_vectorstore(
     if save_path:
         save_path = Path(save_path)
         save_path.mkdir(parents=True, exist_ok=True)
-        vectorstore.save_local(str(save_path))
+        vectorstore.save_local(save_path)
         logger.info(f"Vector store saved to {save_path}")
 
     return vectorstore
@@ -112,7 +112,7 @@ def load_vectorstore(load_path: Path | None = None) -> FAISS | None:
     embeddings = get_embeddings()
     # Note: allow_dangerous_deserialization is required by LangChain's FAISS implementation
     # as it uses pickle internally. We mitigate this by validating the path above.
-    vectorstore = FAISS.load_local(str(load_path), embeddings, allow_dangerous_deserialization=True)
+    vectorstore = FAISS.load_local(load_path, embeddings, allow_dangerous_deserialization=True)
     logger.info("Vector store loaded successfully")
     return vectorstore
 
