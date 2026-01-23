@@ -1,14 +1,17 @@
 """Document retrieval node."""
 
+import threading
+
 from langchain_core.documents import Document
 from loguru import logger
 
-from src.config import TOP_K_RESULTS
+from src.common.constants import MAX_TOTAL_DOCS, TOP_K_RESULTS
 from src.data_prep.vectorstore import load_vectorstore
 from src.state import AgentState
 
-# Cache the vectorstore to avoid reloading on every query
+# Thread-safe cache for the vectorstore
 _vectorstore_cache = None
+_vectorstore_lock = threading.Lock()
 
 # Source priority mapping based on query type
 SOURCE_PRIORITY = {
@@ -20,10 +23,13 @@ SOURCE_PRIORITY = {
 
 
 def get_vectorstore():
-    """Get the vector store, loading it if necessary."""
+    """Get the vector store, loading it if necessary (thread-safe)."""
     global _vectorstore_cache
     if _vectorstore_cache is None:
-        _vectorstore_cache = load_vectorstore()
+        with _vectorstore_lock:
+            # Double-check locking pattern
+            if _vectorstore_cache is None:
+                _vectorstore_cache = load_vectorstore()
     return _vectorstore_cache
 
 
@@ -69,16 +75,19 @@ def prioritize_docs(docs: list[Document], query_type: str) -> list[Document]:
     return sorted(docs, key=get_priority)
 
 
-def multi_query_search(vectorstore, queries: list[str], k_per_query: int) -> list[Document]:
+def multi_query_search(
+    vectorstore, queries: list[str], k_per_query: int, max_total: int = MAX_TOTAL_DOCS
+) -> list[Document]:
     """Search with multiple queries and deduplicate results.
 
     Args:
         vectorstore: The vector store to search
         queries: List of search queries
         k_per_query: Number of results per query
+        max_total: Maximum total documents to return (prevents unbounded growth)
 
     Returns:
-        Deduplicated list of documents
+        Deduplicated list of documents, capped at max_total
     """
     seen_content = set()
     all_docs = []
@@ -91,6 +100,10 @@ def multi_query_search(vectorstore, queries: list[str], k_per_query: int) -> lis
             if content_key not in seen_content:
                 seen_content.add(content_key)
                 all_docs.append(doc)
+
+                # Stop early if we've hit the cap
+                if len(all_docs) >= max_total:
+                    return all_docs
 
     return all_docs
 
@@ -159,7 +172,7 @@ def retriever(state: AgentState) -> dict:
     logger.debug(f"Retrieved {len(docs)} documents (prioritized for {query_type})")
     for i, doc in enumerate(docs):
         logger.debug(
-            f"Doc {i+1} [{doc.metadata.get('source', 'unknown')}]: {doc.page_content[:100]}..."
+            f"Doc {i + 1} [{doc.metadata.get('source', 'unknown')}]: {doc.page_content[:100]}..."
         )
 
     # Combine with web results if available
