@@ -231,11 +231,11 @@ if __name__ == "__main__":
 
         # Show sample
         for source, content in preprocessed.items():
-            print(f"\n{'=' * 60}")
-            print(f"Source: {source}")
-            print(f"Length: {len(content):,} chars")
-            print(f"{'=' * 60}")
-            print(content[:1000])
-            print("...")
+            logger.info(f"\n{'=' * 60}")
+            logger.info(f"Source: {source}")
+            logger.info(f"Length: {len(content):,} chars")
+            logger.info(f"{'=' * 60}")
+            logger.info(content[:1000])
+            logger.info("...")
     else:
         logger.warning("No docs found. Run downloader first.")

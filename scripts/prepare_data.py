@@ -13,6 +13,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from loguru import logger
+
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
@@ -38,60 +40,60 @@ def main():
     )
     args = parser.parse_args()
 
-    print("=" * HEADER_WIDTH)
-    print("LangGraph Helper Agent - Data Preparation")
-    print("=" * HEADER_WIDTH)
+    logger.info("=" * HEADER_WIDTH)
+    logger.info("LangGraph Helper Agent - Data Preparation")
+    logger.info("=" * HEADER_WIDTH)
 
     # Step 1: Download documentation
-    print("\n[1/3] Downloading documentation files...")
+    logger.info("\n[1/3] Downloading documentation files...")
     results = download_docs(force=args.force)
 
     if not any(results.values()):
-        print("ERROR: Failed to download any documentation files")
+        logger.error("Failed to download any documentation files")
         sys.exit(1)
 
     successful = sum(1 for v in results.values() if v)
-    print(f"\nDownload complete: {successful}/{len(results)} files")
+    logger.info(f"\nDownload complete: {successful}/{len(results)} files")
 
     if args.download_only:
-        print("\n--download-only specified, skipping vector store creation")
+        logger.info("\n--download-only specified, skipping vector store creation")
         return
 
     # Step 2: Load and preprocess docs
-    print("\n[2/3] Loading and preprocessing documentation...")
+    logger.info("\n[2/3] Loading and preprocessing documentation...")
     docs = get_all_docs()
     if not docs:
-        print("ERROR: No documentation files found")
+        logger.error("No documentation files found")
         sys.exit(1)
 
     if args.no_preprocess:
-        print("  Skipping preprocessing (--no-preprocess)")
+        logger.info("  Skipping preprocessing (--no-preprocess)")
     else:
-        print("  Preprocessing: removing JS/TS, cleaning markdown, filtering...")
+        logger.info("  Preprocessing: removing JS/TS, cleaning markdown, filtering...")
         docs = preprocess_all_docs(docs)
 
     total_chars = sum(len(c) for c in docs.values())
-    print(f"  Total content: {total_chars:,} characters across {len(docs)} files")
+    logger.info(f"  Total content: {total_chars:,} characters across {len(docs)} files")
 
     # Step 3: Create vector store
-    print("\n[3/3] Creating vector store...")
+    logger.info("\n[3/3] Creating vector store...")
 
     if vectorstore_exists() and not args.force:
-        print(f"  Vector store already exists at {VECTORSTORE_DIR}")
-        print("  Use --force to rebuild")
+        logger.info(f"  Vector store already exists at {VECTORSTORE_DIR}")
+        logger.info("  Use --force to rebuild")
         return
 
     chunks = chunk_documents(docs)
-    print(f"  Created {len(chunks)} chunks")
+    logger.info(f"  Created {len(chunks)} chunks")
 
     create_vectorstore(chunks, VECTORSTORE_DIR)
 
-    print("\n" + "=" * HEADER_WIDTH)
-    print("Data preparation complete!")
-    print("=" * HEADER_WIDTH)
-    print("\nYou can now run the agent:")
-    print("  python main.py                    # Interactive mode")
-    print("  python main.py 'Your question'    # Quick query")
+    logger.info("\n" + "=" * HEADER_WIDTH)
+    logger.info("Data preparation complete!")
+    logger.info("=" * HEADER_WIDTH)
+    logger.info("\nYou can now run the agent:")
+    logger.info("  python main.py                    # Interactive mode")
+    logger.info("  python main.py 'Your question'    # Quick query")
 
 
 if __name__ == "__main__":

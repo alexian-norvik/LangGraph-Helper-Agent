@@ -53,9 +53,9 @@ def get_user_choice(prompt: str, options: list[str], default: str = None) -> str
             if choice in [o.lower() for o in options]:
                 return choice
 
-            print(f"  Invalid choice. Please enter one of: {options_str}")
+            logger.warning(f"Invalid choice. Please enter one of: {options_str}")
         except (EOFError, KeyboardInterrupt):
-            print("\n")
+            logger.info("")
             sys.exit(0)
 
 
@@ -65,9 +65,9 @@ def setup_session() -> dict:
     Returns:
         Dictionary with session configuration
     """
-    print("\n" + "=" * HEADER_WIDTH)
-    print("  LangGraph Helper Agent - Setup")
-    print("=" * HEADER_WIDTH)
+    logger.info("\n" + "=" * HEADER_WIDTH)
+    logger.info("  LangGraph Helper Agent - Setup")
+    logger.info("=" * HEADER_WIDTH)
 
     # Mode selection
     mode = get_user_choice("\n1. Select mode", ["offline", "online"], default="offline")
@@ -81,9 +81,9 @@ def setup_session() -> dict:
         "3. Log level", ["quiet", "normal", "verbose", "debug"], default="quiet"
     )
 
-    print("\n" + "-" * HEADER_WIDTH)
-    print(f"  Mode: {mode} | Memory: {'on' if enable_memory else 'off'} | Logs: {log_level}")
-    print("-" * HEADER_WIDTH)
+    logger.info("\n" + "-" * HEADER_WIDTH)
+    logger.info(f"  Mode: {mode} | Memory: {'on' if enable_memory else 'off'} | Logs: {log_level}")
+    logger.info("-" * HEADER_WIDTH)
 
     return {"mode": mode, "enable_memory": enable_memory, "log_level": LOG_LEVEL_MAP[log_level]}
 
@@ -101,7 +101,7 @@ def run_interactive(mode: str, enable_memory: bool):
     set_mode(mode)
     logger.info(f"Starting interactive mode: {mode}, memory={'on' if enable_memory else 'off'}")
 
-    print("\nReady! Type your question or 'help' for commands.\n")
+    logger.info("\nReady! Type your question or 'help' for commands.\n")
 
     chat_history = [] if enable_memory else None
 
@@ -109,32 +109,32 @@ def run_interactive(mode: str, enable_memory: bool):
         try:
             query = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\n\nGoodbye!")
+            logger.info("\n\nGoodbye!")
             break
 
         if not query:
             continue
 
         if query.lower() in ("quit", "exit", "q"):
-            print("\nGoodbye!")
+            logger.info("\nGoodbye!")
             break
 
         if query.lower() == "help":
-            print(f"\n  Mode: {get_mode()} | Memory: {'on' if enable_memory else 'off'}")
-            print("  Commands:")
-            print("    mode     - Switch offline/online")
-            print("    status   - Show current settings")
-            print("    clear    - Clear chat history")
-            print("    quit     - Exit")
-            print()
+            logger.info(f"\n  Mode: {get_mode()} | Memory: {'on' if enable_memory else 'off'}")
+            logger.info("  Commands:")
+            logger.info("    mode     - Switch offline/online")
+            logger.info("    status   - Show current settings")
+            logger.info("    clear    - Clear chat history")
+            logger.info("    quit     - Exit")
+            logger.info("")
             continue
 
         if query.lower() == "status":
-            print(f"\n  Mode: {get_mode()}")
-            print(f"  Memory: {'on' if enable_memory else 'off'}")
+            logger.info(f"\n  Mode: {get_mode()}")
+            logger.info(f"  Memory: {'on' if enable_memory else 'off'}")
             if chat_history:
-                print(f"  History: {len(chat_history)} messages")
-            print()
+                logger.info(f"  History: {len(chat_history)} messages")
+            logger.info("")
             continue
 
         if query.lower() == "mode":
@@ -142,21 +142,21 @@ def run_interactive(mode: str, enable_memory: bool):
             new_mode = "online" if current == "offline" else "offline"
             set_mode(new_mode)
             logger.info(f"Mode switched: {current} -> {new_mode}")
-            print(f"\n  Switched to {new_mode} mode\n")
+            logger.info(f"\n  Switched to {new_mode} mode\n")
             continue
 
         if query.lower() == "clear":
             if chat_history is not None:
                 chat_history.clear()
-                print("\n  Chat history cleared\n")
+                logger.info("\n  Chat history cleared\n")
             else:
-                print("\n  Memory is disabled\n")
+                logger.info("\n  Memory is disabled\n")
             continue
 
         try:
             logger.info(f"Processing: {query[:50]}...")
             response = run_agent(query, mode=get_mode(), chat_history=chat_history)
-            print(f"\nAssistant: {response}\n")
+            logger.info(f"\nAssistant: {response}\n")
 
             if chat_history is not None:
                 chat_history.append({"role": "user", "content": query})
@@ -164,7 +164,6 @@ def run_interactive(mode: str, enable_memory: bool):
 
         except Exception as e:
             logger.error(f"Error: {e}")
-            print(f"\nError: {e}\n")
 
 
 def run_single_query(query: str, mode: str):
@@ -177,10 +176,9 @@ def run_single_query(query: str, mode: str):
 
     try:
         response = run_agent(query, mode=mode)
-        print(response)
+        logger.info(response)
     except Exception as e:
         logger.error(f"Error: {e}")
-        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
