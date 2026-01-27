@@ -18,11 +18,59 @@ from src.common.constants import (
 )
 
 
+def remove_inline_js_noise(text: str) -> str:
+    """Remove inline JavaScript/TypeScript noise that's not in code blocks.
+
+    Keeps JS code examples in code blocks, removes scattered inline JS.
+
+    Args:
+        text: Documentation text
+
+    Returns:
+        Text with inline JS noise removed
+    """
+    # Remove lines that are clearly inline JS/TS (not in code blocks)
+    js_noise_patterns = [
+        r'^import \{[^}]+\} from ["\']@[^"\']+["\'];?\s*$',  # import { x } from "@langchain/..."
+        r"^const \w+\s*=\s*new \w+\([^)]*\);?\s*$",  # const x = new Something()
+        r"^let \w+\s*[:=]",  # let x = or let x:
+        r"^export (?:const|function|class|interface|type)\s",  # export declarations
+        r"^\s*\w+:\s*(?:string|number|boolean|any)\[?\]?,?\s*$",  # TypeScript type annotations
+    ]
+
+    lines = text.split("\n")
+    filtered_lines = []
+    in_code_block = False
+
+    for line in lines:
+        # Track if we're inside a code block
+        if line.strip().startswith("```"):
+            in_code_block = not in_code_block
+            filtered_lines.append(line)
+            continue
+
+        # If inside a code block, keep everything
+        if in_code_block:
+            filtered_lines.append(line)
+            continue
+
+        # Outside code blocks, filter JS noise
+        is_js_noise = False
+        for pattern in js_noise_patterns:
+            if re.match(pattern, line.strip(), re.IGNORECASE):
+                is_js_noise = True
+                break
+
+        if not is_js_noise:
+            filtered_lines.append(line)
+
+    return "\n".join(filtered_lines)
+
+
 def normalize_code_blocks(text: str) -> str:
     """Normalize code block markers for consistency.
 
-    Keeps both Python and TypeScript/JavaScript code blocks.
-    Only removes clearly broken or empty code blocks.
+    Removes empty code blocks and inline JS/TS noise.
 
     Args:
         text: Raw documentation text
@@ -35,6 +83,9 @@ def normalize_code_blocks(text: str) -> str:
 
     # Remove code blocks that are just whitespace
     text = re.sub(WHITESPACE_CODE_BLOCK_PATTERN, "", text)
+
+    # Remove inline JavaScript/TypeScript noise (keep code block examples)
+    text = remove_inline_js_noise(text)
 
     return text
 
@@ -174,7 +225,7 @@ def preprocess_document(text: str, source: str) -> str:
     """
     original_len = len(text)
 
-    # Step 1: Normalize code blocks (keep both Python and TypeScript)
+    # Step 1: Normalize code blocks (remove inline JS/TS noise, keep examples)
     text = normalize_code_blocks(text)
     logger.debug(
         f"After code normalization: {len(text)} chars ({len(text) / original_len * 100:.1f}%)"
