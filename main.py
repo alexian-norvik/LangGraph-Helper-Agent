@@ -172,11 +172,11 @@ def run_single_query(query: str, mode: str):
     from src.graph import run_agent
 
     set_mode(mode)
-    logger.info(f"Single query - mode: {mode}")
+    logger.debug(f"Single query - mode: {mode}")
 
     try:
         response = run_agent(query, mode=mode)
-        logger.info(response)
+        print(response)
     except Exception as e:
         logger.error(f"Error: {e}")
         sys.exit(1)
