@@ -1,7 +1,7 @@
 llm:
   platform: ollama  # Options: 'ollama' or 'openrouter'
   model:
-    name: "llama3.2"  # For Ollama: qwen2.5:14b, qwen2.5:7b, llama3.2, etc.
+    name: "qwen2.5:7b"  # For Ollama: qwen2.5:14b, qwen2.5:7b, llama3.2, etc.
   parameters:
     temperature: 0.3
     max_tokens: 2000
