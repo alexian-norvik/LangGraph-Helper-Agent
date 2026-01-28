@@ -110,7 +110,7 @@ The agent uses a TypedDict-based state (`AgentState`) that flows through all nod
    ollama serve  # Or just open the Ollama app
 
    # Pull the LLM and embedding models
-   ollama pull llama3.2           # For LLM
+   ollama pull qwen2.5:7b         # For LLM (better instruction following)
    ollama pull snowflake-arctic-embed2   # For embeddings
    ```
 
@@ -237,7 +237,7 @@ The LLM provider is configured in `config.yaml`:
 llm:
   platform: ollama  # or 'openrouter'
   model:
-    name: "llama3.2"  # or any OpenRouter model
+    name: "qwen2.5:7b"  # or any OpenRouter model
   parameters:
     temperature: 0.3
     max_tokens: 2000
